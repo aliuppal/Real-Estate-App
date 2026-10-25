@@ -1,39 +1,32 @@
 import "server-only";
 import type { Repository } from "../repository";
+import { passwordResets, users } from "./repos/users";
+import { agencies, agents, neighbourhoods, reviews, verification } from "./repos/directory";
+import { listings, stats } from "./repos/listings";
+import { collections, offers, reports, savedSearches, viewings } from "./repos/engagement";
+import { conversations, notifications } from "./repos/messaging";
+import { leads } from "./repos/crm";
 
-/**
- * Drizzle + Neon implementation. Stubbed until Phase 3: the schema, migrations and queries land
- * together once the database is connected. Until then, leave DATABASE_URL empty to use mock data.
- */
-const notYet = (): never => {
-  throw new Error(
-    "The Neon repository is not implemented yet (Phase 3). Unset DATABASE_URL to run on mock data.",
-  );
-};
-
-const stubGroup = <T extends object>() =>
-  new Proxy({} as T, { get: () => notYet });
-
-/** Phase 3 reads DATABASE_URL here to create the Neon client. */
+/** Drizzle + Neon implementation; the connection comes from DATABASE_URL (see ./client.ts). */
 export function createDbRepository(): Repository {
   return {
     kind: "db",
-    users: stubGroup(),
-    passwordResets: stubGroup(),
-    neighbourhoods: stubGroup(),
-    listings: stubGroup(),
-    agents: stubGroup(),
-    agencies: stubGroup(),
-    verification: stubGroup(),
-    reviews: stubGroup(),
-    savedSearches: stubGroup(),
-    collections: stubGroup(),
-    conversations: stubGroup(),
-    viewings: stubGroup(),
-    leads: stubGroup(),
-    offers: stubGroup(),
-    notifications: stubGroup(),
-    reports: stubGroup(),
-    stats: stubGroup(),
+    users,
+    passwordResets,
+    neighbourhoods,
+    listings,
+    agents,
+    agencies,
+    verification,
+    reviews,
+    savedSearches,
+    collections,
+    conversations,
+    viewings,
+    leads,
+    offers,
+    notifications,
+    reports,
+    stats,
   };
 }

@@ -5,9 +5,9 @@ Built with Next.js 15 (App Router), TypeScript, Tailwind v4, shadcn/ui (Base UI)
 The visual system follows Cohere's 2026 design language: white editorial canvas, near-black pill CTAs,
 deep-green feature bands, soft stone surfaces and 22px media cards.
 
-> **Status: Phase 2 of 4.** The full product runs end to end on mock data: search with a clustered map and
-> draw-to-search, listing detail, agent matching, directories, messaging and notifications, every role's
-> dashboard, and the listing wizard. Phase 3 connects Neon Postgres.
+> **Status: Phase 3 of 4.** Everything below runs on Neon Postgres (Drizzle) or, without `DATABASE_URL`, on mock data:
+> search with a clustered map and draw-to-search, listing detail, agent matching, directories, messaging,
+> notifications, every role's dashboard and the listing wizard. Phase 4 is polish, SEO and performance.
 
 ## Getting started
 
@@ -17,8 +17,21 @@ cp .env.example .env.local   # then set AUTH_SECRET (npx auth secret)
 npm run dev                  # http://localhost:3000
 ```
 
-The app runs entirely on in-memory mock data until `DATABASE_URL` is set (Phase 3 adds the Neon implementation).
-Mock data resets when the dev server restarts.
+Without `DATABASE_URL` the app runs on in-memory mock data (resets on restart). To use Neon Postgres:
+
+```bash
+# put your Neon connection string in .env.local as DATABASE_URL, then:
+npm run db:migrate   # create the tables (drizzle/*.sql)
+npm run db:seed      # load the demo data, including hashed demo passwords (empties the tables first)
+npm run dev
+```
+
+| Script | What it does |
+|---|---|
+| `npm run db:generate` | Generate a migration after editing `lib/data/db/schema.ts` |
+| `npm run db:migrate` | Apply migrations to `DATABASE_URL` |
+| `npm run db:seed` | Reset and load the demo dataset |
+| `npm run db:studio` | Browse the database in Drizzle Studio |
 
 | Script | What it does |
 |---|---|
@@ -109,7 +122,7 @@ See `.env.example`. `AUTH_SECRET` is required; everything else is optional in de
 
 1. **Foundation** ✅ project setup, design tokens, layout, mock data, auth, role middleware, landing page
 2. **Core experience** ✅ search with map and filters, listing detail, agent matching, directories, full dashboards, messaging, listing wizard
-3. **Neon database** Drizzle schema, migrations, seed script, `lib/data/db` implementation
+3. **Neon database** ✅ Drizzle schema, migrations, seed script, `lib/data/db` implementation
 4. **Polish** SEO and Open Graph, sitemap, performance and Lighthouse pass
 
 Listings, agents, agencies, reviews and prices in the seed are fictional demo data.

@@ -79,6 +79,20 @@ re-checks with `requireRole`. Users who try another role's area are sent to thei
 a garden" into `SearchFilters` using keywords and regexes. It sits behind a `NaturalLanguageParser` interface so an
 LLM can replace it without touching callers. Listing descriptions use the same pattern (`lib/listing-copy.ts`).
 
+**Server actions.** Every mutation lives in `app/actions/*` and goes through `runAction` + `actionUser`
+(`lib/auth/action.ts`): the user comes from the session, input is validated with Zod, and ownership is checked
+(`canManageListing`). Side effects such as notifications, CRM leads and saved-search alerts are in `lib/notify.ts`.
+
+**Realtime.** Messages and notifications poll through `useLiveQuery` (`lib/realtime.ts`). Switching to
+Pusher or Ably means subscribing there and invalidating queries; components don't change.
+
+**Matching and pricing.** `lib/matching.ts` scores agents on area (25), budget (20), specialty (15), track
+record (15), language (10), responsiveness (10) and rating (5), with reasons for each match.
+`lib/pricing.ts` suggests a listing price from the median rate of comparable listings nearby.
+
+**Uploads.** `/api/uploads` stores photos through `lib/storage` (local `public/uploads` in development).
+Add a Cloudinary or UploadThing driver behind the same interface for production.
+
 **Locale.** Currency (PKR, with USD conversion), area units (sq ft, sq m, marla, kanal) and the map centre live in
 `config/locale.ts`. Prices are stored in PKR and areas in square feet.
 
@@ -94,7 +108,7 @@ See `.env.example`. `AUTH_SECRET` is required; everything else is optional in de
 ## Roadmap
 
 1. **Foundation** ✅ project setup, design tokens, layout, mock data, auth, role middleware, landing page
-2. **Core experience** search with map and filters, listing detail, agent matching, directories, full dashboards, messaging, listing wizard
+2. **Core experience** ✅ search with map and filters, listing detail, agent matching, directories, full dashboards, messaging, listing wizard
 3. **Neon database** Drizzle schema, migrations, seed script, `lib/data/db` implementation
 4. **Polish** SEO and Open Graph, sitemap, performance and Lighthouse pass
 

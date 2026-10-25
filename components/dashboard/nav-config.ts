@@ -23,6 +23,8 @@ export const ROLE_NAV: Record<Role, NavItem[]> = {
     overview("owner"),
     { label: "My listings", href: "/dashboard/owner/listings", icon: Home },
     { label: "New listing", href: "/dashboard/listings/new", icon: PlusCircle },
+    { label: "Viewings", href: "/dashboard/owner/viewings", icon: CalendarDays },
+    { label: "Offers", href: "/dashboard/owner/offers", icon: Wallet },
     { label: "Performance", href: "/dashboard/owner/performance", icon: ChartLine },
   ],
   agent: [

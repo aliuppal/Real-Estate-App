@@ -5,9 +5,9 @@ Built with Next.js 15 (App Router), TypeScript, Tailwind v4, shadcn/ui (Base UI)
 The visual system follows Cohere's 2026 design language: white editorial canvas, near-black pill CTAs,
 deep-green feature bands, soft stone surfaces and 22px media cards.
 
-> **Status: Phase 1 of 4.** Foundation, data layer, auth, role-based routing, landing page and dashboard
-> overviews are done. Search, listing detail, matching quiz and the full dashboards arrive in Phase 2;
-> routes for them already exist and are permission-checked.
+> **Status: Phase 2 of 4.** The full product runs end to end on mock data: search with a clustered map and
+> draw-to-search, listing detail, agent matching, directories, messaging and notifications, every role's
+> dashboard, and the listing wizard. Phase 3 connects Neon Postgres.
 
 ## Getting started
 

@@ -45,6 +45,11 @@ export const enquirySchema = z.object({
   body: z.string().trim().min(2, "Write a message").max(2000),
 });
 
+export const agentContactSchema = z.object({
+  agentId: z.string().min(1),
+  body: z.string().trim().min(2, "Write a message").max(2000),
+});
+
 export const viewingRequestSchema = z.object({
   listingId: z.string().min(1),
   start: z.iso.datetime({ offset: true }),

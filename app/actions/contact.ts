@@ -7,7 +7,7 @@ import { listingContact, notify, upsertLead } from "@/lib/notify";
 import { bookedFor } from "@/lib/viewings";
 import { formatInLahore, viewingSlots } from "@/lib/availability";
 import { formatPrice } from "@/lib/format";
-import { callbackSchema, enquirySchema, offerSchema, viewingRequestSchema } from "@/lib/validation/listing";
+import { agentContactSchema, callbackSchema, enquirySchema, offerSchema, viewingRequestSchema } from "@/lib/validation/listing";
 
 async function contactable(user: PublicUser, listingId: string) {
   const listing = await repo.listings.findById(listingId);
@@ -57,6 +57,25 @@ export async function requestViewing(input: { listingId: string; start: string; 
     });
     revalidatePath("/dashboard", "layout");
     return viewing;
+  });
+}
+
+/** Message an agent directly (from the match quiz or their profile); also files a lead for them. */
+export async function contactAgent(input: { agentId: string; body: string }) {
+  return runAction(async () => {
+    const user = await actionUser();
+    const { agentId, body } = agentContactSchema.parse(input);
+    const agent = await repo.agents.findById(agentId);
+    if (!agent || agent.verification !== "verified") throw new ActionError("That agent isn't available.");
+    if (agent.userId === user.id) throw new ActionError("You can't message yourself.");
+    const conversation = await repo.conversations.findOrStart(null, [user.id, agent.userId]);
+    await repo.conversations.send(conversation.id, user.id, body);
+    const open = (await repo.leads.forAgent(agent.id)).some((l) => l.seekerId === user.id && !l.listingId && l.stage !== "closed" && l.stage !== "lost");
+    if (!open) {
+      await repo.leads.create({ agentId: agent.id, seekerId: user.id, listingId: null, name: user.name, email: user.email, phone: user.phone, source: "match_quiz", budget: null });
+    }
+    await notify([agent.userId], { type: "lead", title: `New client: ${user.name}`, body: body.slice(0, 120), href: `/dashboard/messages?c=${conversation.id}` });
+    return { conversationId: conversation.id };
   });
 }
 

@@ -7,6 +7,10 @@ import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES, getStorage } from "@/lib/storage"
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user || !LISTER_ROLES.includes(user.role)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  // Serverless filesystems are read-only; local storage only works on a long-running server.
+  if (process.env.VERCEL && (process.env.STORAGE_DRIVER ?? "local") === "local") {
+    return NextResponse.json({ error: "Photo uploads need a storage provider on this deployment. Use the sample photos for now." }, { status: 501 });
+  }
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

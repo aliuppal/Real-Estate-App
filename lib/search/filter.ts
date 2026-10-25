@@ -51,8 +51,11 @@ const comparators: Record<SortKey, (a: Listing, b: Listing) => number> = {
   price_per_area: (a, b) => pricePerSqft(a) - pricePerSqft(b),
 };
 
+/** Ties break by newest, then id, so the order (and paging) is stable and matches the database. */
+const tiebreak = (a: Listing, b: Listing) => comparators.newest(a, b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
 export function sortListings(listings: Listing[], sort: SortKey = "newest"): Listing[] {
-  return [...listings].sort(comparators[sort]);
+  return [...listings].sort((a, b) => comparators[sort](a, b) || tiebreak(a, b));
 }
 
 /** Price drop = latest price below the first recorded price. */

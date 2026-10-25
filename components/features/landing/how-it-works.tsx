@@ -48,9 +48,9 @@ export function HowItWorks() {
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
+        {/* The tabpanel role sits on a wrapper so the <ol> keeps its list semantics. */}
+        <motion.div key={audience} role="tabpanel" initial={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
         <motion.ol
-          key={audience}
-          role="tabpanel"
           className="grid gap-10 md:grid-cols-3 md:gap-8"
           initial="hidden"
           animate="show"
@@ -69,6 +69,7 @@ export function HowItWorks() {
             </motion.li>
           ))}
         </motion.ol>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

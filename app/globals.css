@@ -222,6 +222,19 @@
   .lift:focus-within::after {
     opacity: 1;
   }
+  /*
+   * Above-the-fold entrance in CSS, not JS: it starts on first paint, so the hero never waits
+   * for hydration to become visible (LCP). Transform + opacity only. Set --enter-delay,
+   * --enter-x, --enter-y and --enter-opacity inline to vary it. The LCP element must not
+   * fade from 0: Chrome only counts it once it paints with opacity above zero.
+   */
+  .enter {
+    animation: enter 0.7s var(--ease-out-quint) var(--enter-delay, 0s) both;
+  }
+  /* A line rising from behind an overflow-hidden parent. */
+  .enter-mask {
+    animation: enter-mask 0.9s var(--ease-out-quint) var(--enter-delay, 0s) both;
+  }
   /* Bottom padding so content clears the mobile tab bar and the iOS home indicator. */
   .pb-tabbar {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
@@ -279,7 +292,23 @@
   filter: grayscale(0.6) invert(0.92) hue-rotate(180deg) brightness(0.9) contrast(0.9);
 }
 
+@keyframes enter {
+  from {
+    opacity: var(--enter-opacity, 0);
+    transform: translate3d(var(--enter-x, 0), var(--enter-y, 12px), 0);
+  }
+}
+@keyframes enter-mask {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  /* Delays would otherwise keep content hidden even with near-zero durations. */
+  .enter, .enter-mask {
+    animation: none;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

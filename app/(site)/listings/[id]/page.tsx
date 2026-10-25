@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
+import { cache } from "react";
+import { site } from "@/config/site";
 import { ChevronRight } from "lucide-react";
 import { repo, type Listing, type PublicUser } from "@/lib/data";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -25,15 +28,21 @@ type Props = { params: Promise<{ id: string }> };
 
 const isPublic = (l: Listing) => l.status === "active" || l.status === "under_offer";
 
-async function load(id: string) {
-  return (await repo.listings.findById(id)) ?? (await repo.listings.findBySlug(id));
-}
+/** Deduplicated per request: metadata, the OG image and the page all need the same listing. */
+const load = cache(async (id: string) => (await repo.listings.findById(id)) ?? (await repo.listings.findBySlug(id)));
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const l = await load((await params).id);
   if (!l || !isPublic(l)) return { title: "Listing not found" };
   const description = `${formatPrice(l.price, { compact: true, purpose: l.purpose })} · ${l.address}. ${l.description.slice(0, 120)}`;
-  return { title: l.title, description, openGraph: { title: l.title, description, images: [{ url: l.images[0] }] } };
+  // The preview image comes from ./opengraph-image.tsx.
+  return {
+    title: l.title,
+    description,
+    alternates: { canonical: `/listings/${l.id}` },
+    openGraph: { title: l.title, description, type: "website", url: `/listings/${l.id}` },
+    twitter: { card: "summary_large_image", title: l.title, description },
+  };
 }
 
 async function publicContact(l: Listing): Promise<PublicContact | null> {
@@ -50,6 +59,26 @@ async function publicContact(l: Listing): Promise<PublicContact | null> {
   const owner = l.ownerId ? await repo.users.findById(l.ownerId) : null;
   if (!owner) return null;
   return { kind: "owner", name: owner.name, photo: owner.avatar, subtitle: "Owner · listing privately", verified: false, responseMins: null, rating: null, reviewCount: 0, phone: owner.phone, profileHref: null };
+}
+
+function listingJsonLd(l: Listing, area: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: l.title,
+    description: l.description,
+    url: `${site.url}/listings/${l.id}`,
+    image: l.images.slice(0, 5),
+    datePosted: l.createdAt,
+    offers: { "@type": "Offer", price: l.price, priceCurrency: "PKR", availability: l.status === "active" ? "https://schema.org/InStock" : "https://schema.org/LimitedAvailability" },
+    about: {
+      "@type": l.type === "apartment" ? "Apartment" : l.type === "house" || l.type === "villa" ? "House" : "Place",
+      address: { "@type": "PostalAddress", streetAddress: l.address, addressLocality: area, addressRegion: "Punjab", addressCountry: "PK" },
+      geo: { "@type": "GeoCoordinates", latitude: l.location.lat, longitude: l.location.lng },
+      ...(l.beds ? { numberOfRooms: l.beds } : {}),
+      floorSize: { "@type": "QuantitativeValue", value: l.areaSqft, unitCode: "FTK" },
+    },
+  };
 }
 
 const MANAGE_HREF: Partial<Record<PublicUser["role"], string>> = {
@@ -71,7 +100,8 @@ export default async function ListingPage({ params }: Props) {
   const user = await getCurrentUser();
   const manages = !!user && canManageListing(user, listing);
   if (!isPublic(listing) && !manages) notFound();
-  if (!manages) await repo.listings.recordView(listing.id);
+  // Count the view after the response is sent, so it never delays the page.
+  if (!manages) after(() => repo.listings.recordView(listing.id));
 
   const [neighbourhood, neighbourhoods, contact, similar, booked] = await Promise.all([
     repo.neighbourhoods.findById(listing.neighbourhoodId),
@@ -88,6 +118,11 @@ export default async function ListingPage({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        // Structured data for search engines; escaped so listing text can't close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd(listing, neighbourhood.name)).replace(/</g, "\\u003c") }}
+      />
       <RecordView listingId={listing.id} />
       {!isPublic(listing) && (
         <p role="status" className="mb-6 rounded-lg bg-secondary px-4 py-3 text-sm">

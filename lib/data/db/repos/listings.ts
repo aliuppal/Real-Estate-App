@@ -41,13 +41,16 @@ function conditions(f: SearchFilters): SQL[] {
   return c;
 }
 
+// Ties break by newest, then id (byte order, like JS), matching sortListings so paging is stable.
+const tiebreak = [desc(t.createdAt), asc(sql`${t.id} collate "C"`)];
+
 function order(f: SearchFilters) {
   switch (f.sort) {
-    case "price_asc": return [asc(t.price)];
-    case "price_desc": return [desc(t.price)];
-    case "most_viewed": return [desc(t.views)];
-    case "price_per_area": return [asc(sql`${t.price}::float8 / nullif(${t.areaSqft}, 0)`)];
-    default: return [desc(t.createdAt)];
+    case "price_asc": return [asc(t.price), ...tiebreak];
+    case "price_desc": return [desc(t.price), ...tiebreak];
+    case "most_viewed": return [desc(t.views), ...tiebreak];
+    case "price_per_area": return [asc(sql`${t.price}::float8 / nullif(${t.areaSqft}, 0)`), ...tiebreak];
+    default: return tiebreak;
   }
 }
 

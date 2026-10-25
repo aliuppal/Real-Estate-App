@@ -11,6 +11,9 @@ export const locale = {
   intl: "en-PK",
   city: "Lahore",
   country: "Pakistan",
+  /** Viewing slots and calendars are shown in this zone. Pakistan has no DST, so the offset is fixed. */
+  timeZone: "Asia/Karachi",
+  utcOffset: "+05:00",
 
   baseCurrency: "PKR" as CurrencyCode,
   defaultCurrency: "PKR" as CurrencyCode,

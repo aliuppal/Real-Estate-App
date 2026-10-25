@@ -66,7 +66,12 @@ export async function signupAction(raw: unknown): Promise<ActionResult> {
   if (await repo.users.findByEmail(email)) {
     return { ok: false, error: "An account with this email already exists.", fieldErrors: { email: ["Already registered. Try signing in."] } };
   }
-  await repo.users.create({ name, email, role, passwordHash: await bcrypt.hash(password, 10) });
+  const user = await repo.users.create({ name, email, role, passwordHash: await bcrypt.hash(password, 10) });
+  // Agents get a public profile straight away; it stays unverified until an admin approves it.
+  if (role === "agent") {
+    const agent = await repo.agents.createForUser(user);
+    await repo.users.update(user.id, { agentId: agent.id });
+  }
   await startSession(email, password);
   return { ok: true, redirectTo: ROLE_HOME[role] };
 }

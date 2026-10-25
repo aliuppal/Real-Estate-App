@@ -24,6 +24,7 @@ export function createDbRepository(): Repository {
     listings: stubGroup(),
     agents: stubGroup(),
     agencies: stubGroup(),
+    verification: stubGroup(),
     reviews: stubGroup(),
     savedSearches: stubGroup(),
     collections: stubGroup(),

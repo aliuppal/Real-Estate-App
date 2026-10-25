@@ -95,9 +95,11 @@
   --input: #d9d9dd;
   --ring: #4c6ee6;
   --footer: #17171c;
-  --chart-1: #003c33;
-  --chart-2: #ff7759;
-  --chart-3: #1863dc;
+  /* Chart series, fixed order. Validated (dataviz validate_palette.js): lightness band, chroma,
+   * CVD and normal-vision separation, 3:1 contrast on light surface. */
+  --chart-1: #00876a;
+  --chart-2: #1863dc;
+  --chart-3: #d9532f;
   --chart-4: #93939f;
   --chart-5: #9fd8c4;
   --radius: 0.5rem;
@@ -140,9 +142,10 @@
   --input: rgb(255 255 255 / 0.16);
   --ring: #6d8cf0;
   --footer: #050707;
-  --chart-1: #4cc3a4;
-  --chart-2: #ff8a70;
-  --chart-3: #7aa5f5;
+  /* Dark steps of the same hues, validated against the dark surface. */
+  --chart-1: #2a9d84;
+  --chart-2: #4f86e8;
+  --chart-3: #e2643f;
   --chart-4: #8d8d9a;
   --chart-5: #1f6f5f;
   --sidebar: #0f1412;

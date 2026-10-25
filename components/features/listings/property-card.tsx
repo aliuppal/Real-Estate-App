@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, Bath, BedDouble, Ruler } from "lucide-react";
 import type { Listing } from "@/lib/data/types";
@@ -6,12 +5,17 @@ import { formatArea, formatPrice, plotSizeLabel } from "@/lib/format";
 import { isNew, priceDrop } from "@/lib/search/filter";
 import { typeLabels } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import { CardGallery } from "./card-gallery";
+import { SaveButton } from "./save-button";
 
 interface PropertyCardProps {
   listing: Listing;
   neighbourhoodName: string;
   priority?: boolean;
   className?: string;
+  /** Highlighted when its map pin is hovered. */
+  active?: boolean;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
 const Fact = ({ icon: Icon, children }: { icon: typeof BedDouble; children: React.ReactNode }) => (
@@ -22,32 +26,41 @@ const Fact = ({ icon: Icon, children }: { icon: typeof BedDouble; children: Reac
 );
 
 /**
- * Listing card. Hover: the image scales (transform) and a pre-painted shadow fades in (`.lift`),
- * so nothing re-lays-out or repaints per frame. Phase 2 adds the image carousel and save heart.
+ * Listing card: swipeable photos, heart to save, badges, price and key facts. Hover lift uses a
+ * pre-painted shadow that only changes opacity (`.lift`), so nothing re-lays-out per frame.
  */
-export function PropertyCard({ listing: l, neighbourhoodName, priority, className }: PropertyCardProps) {
+export function PropertyCard({ listing: l, neighbourhoodName, priority, className, active, onHoverChange }: PropertyCardProps) {
   const drop = priceDrop(l);
   const size = l.plotSqft ? plotSizeLabel(l.plotSqft) : formatArea(l.areaSqft, "sqft");
 
   return (
-    <article className={cn("lift group flex flex-col rounded-media border border-border bg-card", className)}>
+    <article
+      data-listing-id={l.id}
+      onPointerEnter={onHoverChange ? () => onHoverChange(true) : undefined}
+      onPointerLeave={onHoverChange ? () => onHoverChange(false) : undefined}
+      className={cn(
+        "lift group flex flex-col rounded-media border bg-card transition-colors duration-200",
+        active ? "border-foreground/40" : "border-border",
+        className,
+      )}
+    >
       <div className="relative aspect-[4/3] overflow-hidden rounded-t-[inherit] bg-muted">
-        <Image
-          src={l.images[0]}
+        <CardGallery
+          images={l.images}
           alt={`${l.title}, ${neighbourhoodName}`}
-          fill
           priority={priority}
           sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
-          className="object-cover transition-transform duration-700 ease-[var(--ease-out-quint)] group-hover:scale-[1.05]"
         />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+        <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
           {isNew(l) && <span className="mono-label rounded-full bg-white px-2.5 py-1 text-[0.6875rem] text-[#17171c]">New</span>}
           {drop && <span className="mono-label rounded-full bg-cta px-2.5 py-1 text-[0.6875rem] text-cta-foreground">Price drop</span>}
+          {l.status === "under_offer" && <span className="mono-label rounded-full bg-[#17171c] px-2.5 py-1 text-[0.6875rem] text-white">Under offer</span>}
         </div>
+        <SaveButton listingId={l.id} className="absolute right-3 top-3" />
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-5">
-        <p className="mono-label text-meta">
+        <p className="mono-label truncate text-meta">
           {typeLabels[l.type]} · {l.purpose === "rent" ? "For rent" : "For sale"} · {neighbourhoodName}
         </p>
         <h3 className="line-clamp-1 text-[1.0625rem] leading-snug">

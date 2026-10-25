@@ -225,6 +225,57 @@
   }
 }
 
+/* Map price pins and clusters (Leaflet divIcons). Hover/active changes only transform and colour. */
+.nestly-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  border-radius: 9999px;
+  padding: 0.3rem 0.6rem;
+  font: 500 0.75rem/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 0 0 1px var(--hairline), 0 4px 10px -4px rgb(0 0 0 / 0.25);
+  transition: transform 200ms var(--ease-out-quint), background-color 150ms, color 150ms;
+  cursor: pointer;
+}
+.nestly-pin[data-active="true"] {
+  transform: translate(-50%, -100%) scale(1.14);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.nestly-pin[data-outside="true"] {
+  opacity: 0.35;
+}
+.nestly-cluster {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: var(--brand);
+  color: var(--brand-foreground);
+  font: 500 0.8rem/1 var(--font-sans);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand) 25%, transparent);
+  transition: transform 200ms var(--ease-out-quint);
+  cursor: pointer;
+}
+.nestly-cluster:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--muted);
+}
+.dark .leaflet-tile-pane {
+  filter: grayscale(0.6) invert(0.92) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

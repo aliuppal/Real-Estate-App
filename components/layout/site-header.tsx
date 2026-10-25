@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu, type NavUser } from "./user-menu";
+import { useUnreadCounts } from "./live-counts";
 
 interface SiteHeaderProps {
   user: NavUser | null;
@@ -25,6 +26,8 @@ export function SiteHeader({ user, unreadNotifications }: SiteHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [scrolled, setScrolled] = useState(false);
+  const live = useUnreadCounts({ unread: unreadNotifications, unreadMessages: 0 }, !!user);
+  const unread = user ? live.unread : 0;
 
   useEffect(() => {
     let frame = 0;
@@ -80,13 +83,13 @@ export function SiteHeader({ user, unreadNotifications }: SiteHeaderProps) {
             <>
               <Link
                 href="/dashboard/notifications"
-                aria-label={unreadNotifications ? `Notifications, ${unreadNotifications} unread` : "Notifications"}
+                aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
                 className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative hidden rounded-full sm:inline-flex")}
               >
                 <Bell className="size-[1.1rem]" />
-                {unreadNotifications > 0 && (
+                {unread > 0 && (
                   <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-cta px-1 text-[0.625rem] font-semibold leading-4 text-cta-foreground">
-                    {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    {unread > 9 ? "9+" : unread}
                   </span>
                 )}
               </Link>

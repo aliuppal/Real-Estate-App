@@ -64,7 +64,9 @@ interface FilterPanelProps {
 export function FilterPanel({ value, neighbourhoods, onApply }: FilterPanelProps) {
   const [draft, setDraft] = useState<SearchFilters>(value);
   const [unit, setUnit] = useState<AreaUnit>(locale.defaultAreaUnit);
-  useEffect(() => setDraft(value), [value]);
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
   const set = (patch: Partial<SearchFilters>) => setDraft((d) => ({ ...d, ...patch }));
 
   const qs = filtersToSearchParams(draft).toString();

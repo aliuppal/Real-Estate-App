@@ -10,6 +10,7 @@ import { UserMenu, type NavUser } from "@/components/layout/user-menu";
 import { roleLabels } from "@/lib/labels";
 import { ROLE_HOME } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
+import { useUnreadCounts } from "@/components/layout/live-counts";
 import { COMMON_NAV, ROLE_NAV, type NavItem } from "./nav-config";
 
 function NavList({ items, pathname, home, counts }: { items: NavItem[]; pathname: string; home: string; counts: Record<string, number> }) {
@@ -47,7 +48,9 @@ function NavList({ items, pathname, home, counts }: { items: NavItem[]; pathname
 export function DashboardSidebar({ user, unreadMessages, unreadNotifications }: { user: NavUser; unreadMessages: number; unreadNotifications: number }) {
   const pathname = usePathname();
   const home = ROLE_HOME[user.role];
-  const counts = { "/dashboard/messages": unreadMessages, "/dashboard/notifications": unreadNotifications };
+  // Seeded from the server render, then kept live by polling.
+  const live = useUnreadCounts({ unread: unreadNotifications, unreadMessages });
+  const counts = { "/dashboard/messages": live.unreadMessages, "/dashboard/notifications": live.unread };
 
   return (
     <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-sidebar px-3 py-5 lg:flex">

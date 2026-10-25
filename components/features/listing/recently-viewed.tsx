@@ -32,7 +32,9 @@ export function RecordView({ listingId }: { listingId: string }) {
 
 export function RecentlyViewed({ excludeId, nbNames, title = "Recently viewed" }: { excludeId?: string; nbNames: Record<string, string>; title?: string }) {
   const [ids, setIds] = useState<string[]>([]);
-  useEffect(() => setIds(read().filter((id) => id !== excludeId).slice(0, 4)), [excludeId]);
+  useEffect(() => {
+    setIds(read().filter((id) => id !== excludeId).slice(0, 4));
+  }, [excludeId]);
   const { data } = useQuery({
     queryKey: ["recent", ids],
     queryFn: () => getJson<{ items: Listing[] }>(`/api/listings?ids=${ids.join(",")}`),
